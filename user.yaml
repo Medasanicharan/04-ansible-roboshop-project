@@ -5,33 +5,46 @@
   - name: Disable current module nodejs
     ansible.builtin.command: dnf module disable nodejs -y
 
-  - name: Enable required module nodejs:20
-    ansible.builtin.command: dnf module enable nodejs:20 -y
+  - name: Enable required module nodejs:24
+    ansible.builtin.command: dnf module enable nodejs:24 -y
 
   - name: Install NodeJS
     ansible.builtin.dnf:
       name: nodejs
       state: present
+  
+  - name: create roboshop system user
+    ansible.builtin.user:
+      name: roboshop
+      create_home: false
+      shell: /sbin/nologin
+      system: true
+      comment: "roboshop system user"
+      home: /app
+
+  - name: removing existing app directory
+    ansible.builtin.file:
+      path: /app
+      state: absent
+
+  - name: removing existing zip files
+    ansible.builtin.file:
+      path: /tmp/user.zip
+      state: absent
 
   - name: create app directory
     ansible.builtin.file:
       path: /app
       state: directory
   
-  - name: create roboshop system user
-    ansible.builtin.user:
-      name: roboshop
-      shell: /sbin/nologin
-      system: true
-      home: /app
-  
   - name: Download the application code
     ansible.builtin.get_url:
-      url: https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip
+      url: https://raw.githubusercontent.com/daws-92s/roboshop-documentation/refs/heads/main/artifacts/user-v4.zip
+      # url: https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip
       dest: /tmp/user.zip
   
   # This module thinks file exists on ansible control server, needs to extract on to remote machine(user)
-  # remote_src: yes means file already exits in user server
+  # remote_src: yes => means file already exits in user server
   - name: extract the code 
     ansible.builtin.unarchive:
       src: /tmp/user.zip
@@ -43,10 +56,11 @@
       path: /app
 
   - name: copy user service to sysem directory
-    ansible.builtin.copy:
+    # ansible.builtin.copy:
+    ansible.builtin.template:
       src: user.service
       dest: /etc/systemd/system/user.service
-  
+
   - name: systemctl daemon reload
     ansible.builtin.systemd_service:
       daemon_reload: true

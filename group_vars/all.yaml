@@ -1,3 +1,12 @@
 ansible_user: ec2-user
 ansible_password: DevOps321
 mongodb_host: mongodb.cloudnai.online
+redis_host: redis.cloudnai.online
+catalogue_host: catalogue.cloudnai.online
+rabbitmq_host: rabbitmq.cloudnai.online
+mysql_host: mysql.cloudnai.online
+user_host: user.cloudnai.online
+payment_host: payment.cloudnai.online
+shipping_host: shipping.cloudnai.online
+cart_host: cart.cloudnai.online
+frontend_host: frontend.cloudnai.online
