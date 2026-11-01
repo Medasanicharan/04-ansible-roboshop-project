@@ -29,7 +29,7 @@
 
   - name: removing existing zip files
     ansible.builtin.file:
-      path: /tmp/*.zip
+      path: /tmp/catalogue.zip
       state: absent
 
   # - name: create app directory
