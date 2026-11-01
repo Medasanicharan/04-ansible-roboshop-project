@@ -2,6 +2,8 @@
   hosts: mysql
   become: yes
   tasks:
+    - name: Enable mysql 8.4
+      ansible.builtin.command: dnf module enable mysql:8.4 -y
     - name: Install MySQL server
       ansible.builtin.dnf:
         name: mysql-server
@@ -20,7 +22,7 @@
 
     - name: Check if MySQL root password works
       ansible.builtin.shell: |
-        mysql -h mysql.daws2025.online -u root -p'RoboShop@1' -e "SELECT 1;" >/dev/null 2>&1
+        mysql -h mysql.daws2025.online -u root -p{{ mysql_root_password }} -e "SELECT 1;" >/dev/null 2>&1
       register: root_pass_check
       ignore_errors: yes
       changed_when: false
@@ -31,7 +33,7 @@
 
     - name: Setup MySQL root password if not set
       ansible.builtin.shell: |
-        mysql_secure_installation --set-root-pass RoboShop@1
+        mysql_secure_installation --set-root-pass {{ mysql_root_password }}
       when: root_pass_check.rc != 0
       changed_when: true
 
@@ -41,6 +43,6 @@
     #     login_password: ''
     #     user: root
     #     host_all: yes
-    #     password: 'RoboShop@1'
+    #     password: '{{ mysql_root_password }}'
     #     state: present
     #   when: root_pass_check.rc != 0
