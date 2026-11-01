@@ -72,8 +72,8 @@
       state: present
 
   - name: check products loaded or not
-    ansible.builtin.shell: >
-      mongosh --host "{{ mongodb_host }}" --quiet --eval 'db.getsiblingDB("catalogue").products.countDocuments()
+    ansible.builtin.command: >
+      mongosh --host "{{ mongodb_host }}" --quiet --eval 'db.getsiblingDB("catalogue").products.countDocuments()'
     register: catalogue_db_check
 # mongosh --host "{{ mongodb_host }}" --quiet --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
 
