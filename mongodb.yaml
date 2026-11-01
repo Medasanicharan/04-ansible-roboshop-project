@@ -7,10 +7,11 @@
       src: mongodb.repo
       dest: /etc/yum.repos.d/mongo.repo
 
-  # - name: Install MongoDB server
-  #   ansible.builtin.dnf:
-  #     name: mongodb-org
-  #     state: present 
+  - name: Install MongoDB server
+    ansible.builtin.dnf:
+    # ansible.builtin.package:
+      name: mongodb-org
+      state: present 
   
   # - name: Start & Enable MongoDB Service
   #   ansible.builtin.service:
