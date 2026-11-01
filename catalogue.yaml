@@ -73,9 +73,9 @@
 
   - name: check products loaded or not
     ansible.builtin.command: >
-      mongosh --host {{ mongodb_host }} --quiet --eval 'db.getsiblingDB("catalogue").products.countDocuments()
+      mongosh --host "{{ mongodb_host }}" --quiet --eval 'db.getsiblingDB("catalogue").products.countDocuments()
     register: catalogue_db_check
-# mongosh --host {{ mongodb_host }} --quiet --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
+# mongosh --host "{{ mongodb_host }}" --quiet --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
 
   - name: Show/print products count
     ansible.builtin.debug:
@@ -83,7 +83,7 @@
   
   - name: Load products data
     ansible.builtin.shell: >
-      mongosh --host {{ mongodb_host }} < /app/db/master-data.js
+      mongosh --host "{{ mongodb_host }}" < /app/db/master-data.js
     when: catalogue_db_check.stdout | int < 0
 
   - name: systemctl daemon reload
