@@ -2,12 +2,17 @@
   hosts: shipping
   become: yes
   tasks:
+  - name: enable maven 3.9
+    command: dnf module enable maven:3.9 -y
+
   - name: install maven and mysql
     ansible.builtin.dnf:
       name: "{{item}}"
-      state: installed
+      # state: installed
+      state: present
     loop:
     - maven
+    - java-25-openjdk-devel
     - mysql
 
   - name: create app directory
