@@ -15,6 +15,40 @@
     - java-25-openjdk-devel
     - mysql
 
+  - name: Find Java 25 executable
+    ansible.builtin.shell: |
+      find /usr/lib/jvm -type f -path '*/bin/java' | grep 'java-25-openjdk' | head -1
+    register: java25_bin
+    changed_when: false
+
+  - name: Find Java 25 compiler
+    ansible.builtin.shell: |
+      find /usr/lib/jvm -type f -path '*/bin/javac' | grep 'java-25-openjdk' | head -1
+    register: javac25_bin
+    changed_when: false
+
+  - name: Set Java 25 as default
+    ansible.builtin.command: alternatives --set java {{ java25_bin.stdout }}
+    when: java25_bin.stdout != ""
+
+  - name: Set Java 25 compiler as default
+    ansible.builtin.command: alternatives --set javac {{ javac25_bin.stdout }}
+    when: javac25_bin.stdout != ""
+
+  - name: Get Java 25 JAVA_HOME
+    ansible.builtin.shell: |
+      dirname "$(dirname "$(readlink -f /usr/bin/java)")"
+    register: java_home
+    changed_when: false
+
+  - name: Configure JAVA_HOME permanently
+    ansible.builtin.copy:
+      dest: /etc/profile.d/java.sh
+      content: |
+        export JAVA_HOME={{ java_home.stdout }}
+        export PATH=$JAVA_HOME/bin:$PATH
+      mode: '0644'
+
   - name: create roboshop system shipping
     ansible.builtin.user:
       name: roboshop
@@ -67,6 +101,9 @@
     ansible.builtin.command: mvn clean package
     args:
       chdir: /app
+    environment:
+      JAVA_HOME: "{{ java_home.stdout }}"
+      PATH: "{{ java_home.stdout }}/bin:{{ ansible_env.PATH }}"
   
   - name: rename jar file
     ansible.builtin.command: mv target/shipping-1.0.jar shipping.jar 
