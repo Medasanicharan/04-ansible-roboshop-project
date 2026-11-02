@@ -139,37 +139,38 @@
       state: started
       enabled: yes
   
-  # - name: install MySQL client ## mentioned in loop
-  #   ansible.builtin.dnf:
-  #     name: mysql-server
-  #     state: present
+  - name: install MySQL client ## mentioned in loop
+    ansible.builtin.dnf:
+      name: mysql-server
+      state: present
 
-  # - name: Check if catalogue database exists
+  - name: Check if cities data exists or not
+    ansible.builtin.shell: |
+      mysql -h {{ mysql_host }} -uroot -p{{ mysql_root_password }} -e "USE cities; SHOW TABLES LIKE 'countries';" 
+      mysql -h {{ mysql_host }} -uroot -p{{ mysql_root_password }} -N -B -e "SELECT COUNT(*) FROM cities.cities;"
+    register: cities&countries_count
+    ignore_errors: yes
+    changed_when: false
+
+  - name: print cities & countries
+    ansible.builtin.debug:
+      msg: "Database check result: {{ cities&countries_count.rc }} (0 means DB exists, non-zero means not exists)"
+
+  # - name: Load schema, app-user, and master-data SQL scripts if DB not exists
   #   ansible.builtin.shell: |
-  #     mysql -h mysql.daws2025.online -uroot -pRoboShop@1 -e "USE cities; SHOW TABLES LIKE 'countries';" 
-  #   register: mysql_db_check
-  #   ignore_errors: yes
-  #   changed_when: false
+  #     mysql -h {{ mysql_host }} -uroot -p{{ mysql_root_password }} < /app/db/schema.sql
+  #     mysql -h {{ mysql_host }} -uroot -p{{ mysql_root_password }} < /app/db/app-user.sql
+  #     mysql -h {{ mysql_host }} -uroot -p{{ mysql_root_password }} < /app/db/master-data.sql
+  #   when: cities&countries_count.rc != 0 or cities&countries_count.stdout | int == 0
 
-  # - name: Show database check result
-  #   ansible.builtin.debug:
-  #     msg: "Database check result: {{ mysql_db_check.rc }} (0 means DB exists, non-zero means not exists)"
-
-  # # - name: Load schema, app-user, and master-data SQL scripts if DB not exists
-  # #   ansible.builtin.shell: |
-  # #     mysql -h mysql.daws2025.online -uroot -pRoboShop@1 < /app/db/schema.sql
-  # #     mysql -h mysql.daws2025.online -uroot -pRoboShop@1 < /app/db/app-user.sql
-  # #     mysql -h mysql.daws2025.online -uroot -pRoboShop@1 < /app/db/master-data.sql
-  # #   when: mysql_db_check.rc != 0
-
-  # # - name: Load schema, app-user, and master-data SQL scripts if DB not exists
-  # #   ansible.builtin.shell: |
-  # #     mysql -h mysql.daws2025.online -uroot -pRoboShop@1 < {{ item }}
-  # #   loop:
-  # #     - /app/db/schema.sql
-  # #     - /app/db/app-user.sql
-  # #     - /app/db/master-data.sql
-  # #   when: mysql_db_check.rc != 0
+  - name: Load schema, app-user, and master-data SQL scripts if DB not exists
+    ansible.builtin.shell: |
+      mysql -h {{ mysql_host }} -uroot -p{{ mysql_root_password }} < {{ item }}
+    loop:
+      # - /app/db/schema.sql
+      - /app/db/app-user.sql
+      - /app/db/master-data.sql
+    when: cities&countries_count.rc != 0 or cities&countries_count.stdout | int == 0
   
   # - name: Install PyMySQL and cryptography for Python3
   #   ansible.builtin.pip:
@@ -182,8 +183,8 @@
   # # - name: connect to mysql using app user
   # #   community.mysql.mysql_info:
   # #     login_user: shipping
-  # #     login_password: RoboShop@1
-  # #     login_host: mysql.daws2025.online
+  # #     login_password: {{ mysql_root_password }}
+  # #     login_host: {{ mysql_host }}
   # #     login_db: cities
   
   # - name: import data
@@ -192,17 +193,17 @@
   #   community.mysql.mysql_db:
   #     name: all
   #     login_user: root
-  #     login_password: RoboShop@1
-  #     login_host: mysql.daws2025.online
+  #     login_password: {{ mysql_root_password }}
+  #     login_host: {{ mysql_host }}
   #     state: import
   #     target: "{{ item }}"
   #   loop:
   #   - /app/db/schema.sql
   #   - /app/db/app-user.sql
   #   - /app/db/master-data.sql
-  #   when: mysql_db_check.rc != 0
+  #   when: cities&countries_count.rc != 0 or cities&countries_count.stdout | int == 0
 
-  # - name: restart shipping Service
-  #   ansible.builtin.service:
-  #     name: shipping
-  #     state: restarted
+  - name: restart shipping Service
+    ansible.builtin.service:
+      name: shipping
+      state: restarted
