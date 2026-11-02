@@ -87,15 +87,29 @@
       dest: /app
       remote_src: yes
   
-  - name: mvn version without JAVA_HOME
+  - name: Check Maven version with Java 25
     ansible.builtin.command: mvn --version
     args:
       chdir: /app
-    register: mvn_default
-  
-  - name: print mvn version without JAVA_HOME
-    ansible.builtin.debug: 
-      msg: "{{ mvn_default.stdout_lines }}"
+    environment:
+      JAVA_HOME: "{{ java_home.stdout }}"
+      PATH: "{{ java_home.stdout }}/bin:{{ ansible_env.PATH }}"
+    register: mvn_version
+
+  - name: Print Maven version
+    ansible.builtin.debug:
+      msg: "{{ mvn_version.stdout_lines }}"
+
+  - name: Verify Java version
+    ansible.builtin.command: java -version
+    environment:
+      JAVA_HOME: "{{ java_home.stdout }}"
+      PATH: "{{ java_home.stdout }}/bin:{{ ansible_env.PATH }}"
+    register: java_version
+
+  - name: Display Java version
+    ansible.builtin.debug:
+      msg: "{{ java_version.stderr_lines }}"
 
   - name: install maven dependencies
     ansible.builtin.command: mvn clean package
