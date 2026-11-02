@@ -10,3 +10,4 @@ payment_host: payment.cloudnai.online
 shipping_host: shipping.cloudnai.online
 cart_host: cart.cloudnai.online
 frontend_host: frontend.cloudnai.online
+mysql_root_password: RoBoShop@1
