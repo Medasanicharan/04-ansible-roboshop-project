@@ -151,10 +151,14 @@
     register: cities_countries_count
     ignore_errors: yes
     changed_when: false
+    tags:
+    - mysql
 
   - name: print cities & countries
     ansible.builtin.debug:
       msg: "Database check result: {{ cities_countries_count.rc }} (0 means DB exists, non-zero means not exists)"
+    tags:
+    - mysql
 
   # - name: Load schema, app-user, and master-data SQL scripts if DB not exists
   #   ansible.builtin.shell: |
@@ -171,7 +175,9 @@
       - /app/db/app-user.sql
       - /app/db/master-data.sql
     when: cities_countries_count.rc != 0 or cities_countries_count.stdout | int == 0
-  
+    tags:
+    - mysql
+
   # - name: Install PyMySQL and cryptography for Python3
   #   ansible.builtin.pip:
   #     name: "{{item}}"
@@ -207,3 +213,5 @@
     ansible.builtin.service:
       name: shipping
       state: restarted
+    tags:
+    - mysql
