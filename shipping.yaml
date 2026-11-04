@@ -125,12 +125,12 @@
       chdir: /app
 
   - name: copy shipping service to system directory
-    ansible.builtin.copy:
+    ansible.builtin.template:
       src: shipping.service
       dest: /etc/systemd/system/shipping.service
     tags:
     - mysql
-    
+
   - name: systemctl daemon reload
     ansible.builtin.systemd_service:
       daemon_reload: true
