@@ -7,21 +7,33 @@
       name: "{{item}}"
       state: installed
     loop:
-    - python3
-    - gcc
-    - python3-devel
+    - python3.14
+    # - gcc
+    - python3.14-pip
+
+  - name: create roboshop system payment
+    ansible.builtin.user:
+      name: roboshop
+      create_home: false
+      shell: /sbin/nologin
+      system: true
+      comment: "roboshop system payment"
+      home: /app
+
+  - name: removing existing app directory
+    ansible.builtin.file:
+      path: /app
+      state: absent
+
+  - name: removing existing zip files
+    ansible.builtin.file:
+      path: /tmp/payment.zip
+      state: absent
 
   - name: create app directory
     ansible.builtin.file:
       path: /app
       state: directory
-  
-  - name: create roboshop system user
-    ansible.builtin.user:
-      name: roboshop
-      shell: /sbin/nologin
-      system: true
-      home: /app
   
   - name: Download the application code
     ansible.builtin.get_url:
@@ -45,7 +57,7 @@
       chdir: /app
 
   - name: copy payment service to system directory
-    ansible.builtin.copy:
+    ansible.builtin.template:
       src: payment.service
       dest: /etc/systemd/system/payment.service
   
