@@ -35,7 +35,7 @@
     ansible.builtin.file:
       path: "{{ item.path }}"
       state: absent
-    loop: "{{ directory_contents }}"
+    loop: "{{ directory_contents.files }}"
   
   # - name: remove html directory
   #   ansible.builtin.file:
