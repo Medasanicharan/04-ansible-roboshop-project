@@ -25,7 +25,8 @@
   
   - name: Download the application code
     ansible.builtin.get_url:
-      url: https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip
+      url: https://raw.githubusercontent.com/daws-92s/roboshop-documentation/refs/heads/main/artifacts/payment-{{ app_version }}.zip
+      # url: https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip
       dest: /tmp/payment.zip
   
   # This module thinks file exists on ansible control server, needs to extract on to remote machine(payment)
